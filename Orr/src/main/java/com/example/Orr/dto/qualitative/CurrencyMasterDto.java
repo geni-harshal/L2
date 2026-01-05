@@ -5,8 +5,8 @@ import lombok.Data;
 @Data
 public class CurrencyMasterDto {
     private String id;
-    private String code;
-    private String name;
-    private String symbol;
+    private String currencyCode;
+    private String currencyName;
+    private String currencySymbol;
     private boolean active;
 }

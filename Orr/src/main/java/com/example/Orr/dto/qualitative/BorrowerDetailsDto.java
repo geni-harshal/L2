@@ -11,10 +11,14 @@ public class BorrowerDetailsDto {
     private String uUId;
     private Integer borrowerId;
     private String name;
-    private String currencyType;
-    private String currency;
-    private String classification;
+    private String currencyCode;
+    private String currencyName;
+    private String currencySymbol;
+    private String classificationCode;
+    private String classificationName;
+    private Integer riskWeight;
     private LocalDate assessmentDate;
     private String relationshipManager;
-    private String industry;
+    private String industryCode;
+    private String industryName;
 }

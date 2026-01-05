@@ -14,6 +14,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class IndustriRisk {
     @Id
     private String id;
+    private String uUId;
     private String competitiveness;
     private String environmentalConcerns;
     private String fiscalPolicyDependence;

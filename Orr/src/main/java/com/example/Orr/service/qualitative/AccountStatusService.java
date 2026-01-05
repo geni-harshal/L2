@@ -8,11 +8,11 @@ public interface AccountStatusService {
 
     List<AccountStatusDto> findAll();
 
-    AccountStatusDto findById(Integer id);
+    AccountStatusDto findByUUId(String uUId);
 
-    AccountStatusDto create(AccountStatusDto dto);
+    AccountStatusDto create(String uUId, AccountStatusDto accountStatusDto);
 
-    AccountStatusDto updateById(Integer id, AccountStatusDto dto);
+    AccountStatusDto updateByUUId(String uUId, AccountStatusDto accountStatusDto);
 
-    void deleteById(Integer id);
+    void deleteByUUId(String uUId);
 }

@@ -22,9 +22,9 @@ public class BorrowerDetailsController {
         return ResponseEntity.ok(borrowers);
     }
 
-    @GetMapping("/{borrowerId}")
-    public ResponseEntity<BorrowerDetailsDto> getBorrowerById(@PathVariable Integer borrowerId) {
-        BorrowerDetailsDto borrower = borrowerDetailsService.findByBorrowerId(borrowerId);
+    @GetMapping("/{uUId}")
+    public ResponseEntity<BorrowerDetailsDto> getBorrowerById(@PathVariable String uUId) {
+        BorrowerDetailsDto borrower = borrowerDetailsService.findByUUId(uUId);
         if (borrower != null) {
             return ResponseEntity.ok(borrower);
         }
@@ -37,20 +37,20 @@ public class BorrowerDetailsController {
         return ResponseEntity.ok(createdBorrower);
     }
 
-    @PutMapping("/update/{borrowerId}")
+    @PutMapping("/update/{uUId}")
     public ResponseEntity<BorrowerDetailsDto> updateBorrower(
-            @PathVariable Integer borrowerId,
+            @PathVariable String uUId,
             @RequestBody BorrowerDetailsDto borrowerDto) {
-        BorrowerDetailsDto updatedBorrower = borrowerDetailsService.updateByBorrowerId(borrowerId, borrowerDto);
+        BorrowerDetailsDto updatedBorrower = borrowerDetailsService.updateByUUId(uUId, borrowerDto);
         if (updatedBorrower != null) {
             return ResponseEntity.ok(updatedBorrower);
         }
         return ResponseEntity.notFound().build();
     }
 
-    @DeleteMapping("/delete/{borrowerId}")
-    public ResponseEntity<Void> deleteBorrower(@PathVariable Integer borrowerId) {
-        borrowerDetailsService.deleteByBorrowerId(borrowerId);
+    @DeleteMapping("/delete/{uUId}")
+    public ResponseEntity<Void> deleteBorrower(@PathVariable String uUId) {
+        borrowerDetailsService.deleteByUUId(uUId);
         return ResponseEntity.noContent().build();
     }
 }

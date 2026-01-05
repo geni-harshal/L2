@@ -28,89 +28,109 @@ public class IndustriRiskServiceImpl implements IndustriRiskService {
     }
 
     @Override
-    public IndustriRiskDto findById(Integer id) {
-        IndustriRisk industriRisk = mongoTemplate.findById(id, IndustriRisk.class);
-        return industriRisk != null ? toDto(industriRisk) : null;
+    public IndustriRiskDto findByUUId(String uUId) {
+        IndustriRisk entity = mongoTemplate.findOne(
+                Query.query(Criteria.where("uUId").is(uUId)),
+                IndustriRisk.class
+        );
+        return toDto(entity);
     }
 
     @Override
-    public IndustriRiskDto createIndustriRisk(IndustriRiskDto industriRiskDto) {
-        IndustriRisk industriRisk = toEntity(industriRiskDto);
-        IndustriRisk saved = mongoTemplate.save(industriRisk);
-        return toDto(saved);
+    public IndustriRiskDto create(String uUId, IndustriRiskDto dto) {
+
+        // prevent duplicate record for same borrower
+        IndustriRisk existing = mongoTemplate.findOne(
+                Query.query(Criteria.where("uUId").is(uUId)),
+                IndustriRisk.class
+        );
+
+        if (existing != null) {
+            throw new RuntimeException(
+                    "IndustriRisk already exists for UUID: " + uUId
+            );
+        }
+
+        IndustriRisk entity = new IndustriRisk();
+        entity.setUUId(uUId);
+        entity.setCompetitiveness(dto.getCompetitiveness());
+        entity.setEnvironmentalConcerns(dto.getEnvironmentalConcerns());
+        entity.setFiscalPolicyDependence(dto.getFiscalPolicyDependence());
+        entity.setBusinessCyclicality(dto.getBusinessCyclicality());
+        entity.setInflationSensitivity(dto.getInflationSensitivity());
+        entity.setFxSensitivity(dto.getFxSensitivity());
+        entity.setInterestRateSensitivity(dto.getInterestRateSensitivity());
+        entity.setIndustrySalesTrend(dto.getIndustrySalesTrend());
+        entity.setIndustryProfitability(dto.getIndustryProfitability());
+        entity.setIndustryStage(dto.getIndustryStage());
+        entity.setImportPenetration(dto.getImportPenetration());
+        entity.setIndustryFailureRate(dto.getIndustryFailureRate());
+        entity.setSkilledLaborGap(dto.getSkilledLaborGap());
+        entity.setProductPositioning(dto.getProductPositioning());
+        entity.setCapitalSensitivity(dto.getCapitalSensitivity());
+        entity.setTechnologyDependence(dto.getTechnologyDependence());
+
+        mongoTemplate.save(entity);
+        return toDto(entity);
     }
 
     @Override
-    public IndustriRiskDto updateById(Integer id, IndustriRisk industriRisk) {
-        Query query = new Query(Criteria.where("id").is(id));
+    public IndustriRiskDto updateByUUId(String uUId, IndustriRiskDto dto) {
+
+        Query query = Query.query(Criteria.where("uUId").is(uUId));
+
         Update update = new Update()
-                .set("competitiveness", industriRisk.getCompetitiveness())
-                .set("environmentalConcerns", industriRisk.getEnvironmentalConcerns())
-                .set("fiscalPolicyDependence", industriRisk.getFiscalPolicyDependence())
-                .set("businessCyclicality", industriRisk.getBusinessCyclicality())
-                .set("inflationSensitivity", industriRisk.getInflationSensitivity())
-                .set("fxSensitivity", industriRisk.getFxSensitivity())
-                .set("interestRateSensitivity", industriRisk.getInterestRateSensitivity())
-                .set("industrySalesTrend", industriRisk.getIndustrySalesTrend())
-                .set("industryProfitability", industriRisk.getIndustryProfitability())
-                .set("industryStage", industriRisk.getIndustryStage())
-                .set("importPenetration", industriRisk.getImportPenetration())
-                .set("industryFailureRate", industriRisk.getIndustryFailureRate())
-                .set("skilledLaborGap", industriRisk.getSkilledLaborGap())
-                .set("productPositioning", industriRisk.getProductPositioning())
-                .set("capitalSensitivity", industriRisk.getCapitalSensitivity())
-                .set("technologyDependence", industriRisk.getTechnologyDependence());
+                .set("competitiveness", dto.getCompetitiveness())
+                .set("environmentalConcerns", dto.getEnvironmentalConcerns())
+                .set("fiscalPolicyDependence", dto.getFiscalPolicyDependence())
+                .set("businessCyclicality", dto.getBusinessCyclicality())
+                .set("inflationSensitivity", dto.getInflationSensitivity())
+                .set("fxSensitivity", dto.getFxSensitivity())
+                .set("interestRateSensitivity", dto.getInterestRateSensitivity())
+                .set("industrySalesTrend", dto.getIndustrySalesTrend())
+                .set("industryProfitability", dto.getIndustryProfitability())
+                .set("industryStage", dto.getIndustryStage())
+                .set("importPenetration", dto.getImportPenetration())
+                .set("industryFailureRate", dto.getIndustryFailureRate())
+                .set("skilledLaborGap", dto.getSkilledLaborGap())
+                .set("productPositioning", dto.getProductPositioning())
+                .set("capitalSensitivity", dto.getCapitalSensitivity())
+                .set("technologyDependence", dto.getTechnologyDependence());
 
         mongoTemplate.updateFirst(query, update, IndustriRisk.class);
-        return findById(id);
+
+        return findByUUId(uUId);
     }
 
     @Override
-    public void deleteById(Integer id) {
-        Query query = new Query(Criteria.where("id").is(id));
-        mongoTemplate.remove(query, IndustriRisk.class);
+    public void deleteByUUId(String uUId) {
+        mongoTemplate.remove(
+                Query.query(Criteria.where("uUId").is(uUId)),
+                IndustriRisk.class
+        );
     }
 
     private IndustriRiskDto toDto(IndustriRisk entity) {
-IndustriRiskDto industriRiskDto=new IndustriRiskDto();
-industriRiskDto.setIndustryProfitability(entity.getIndustryProfitability());
-industriRiskDto.setId(entity.getId());
-industriRiskDto.setIndustryStage(entity.getIndustryStage());
-industriRiskDto.setCompetitiveness(entity.getCompetitiveness());
-industriRiskDto.setIndustryFailureRate(entity.getIndustryFailureRate());
-industriRiskDto.setCapitalSensitivity(entity.getCapitalSensitivity());
-industriRiskDto.setIndustrySalesTrend(entity.getIndustrySalesTrend());
-industriRiskDto.setFxSensitivity(entity.getFxSensitivity());
-industriRiskDto.setEnvironmentalConcerns(entity.getEnvironmentalConcerns());
-industriRiskDto.setBusinessCyclicality(entity.getBusinessCyclicality());
-industriRiskDto.setFiscalPolicyDependence(entity.getFiscalPolicyDependence());
-industriRiskDto.setImportPenetration(entity.getImportPenetration());
-industriRiskDto.setInterestRateSensitivity(entity.getInterestRateSensitivity());
-industriRiskDto.setProductPositioning(entity.getProductPositioning());
-industriRiskDto.setSkilledLaborGap(entity.getSkilledLaborGap());
-industriRiskDto.setTechnologyDependence(entity.getTechnologyDependence());
-return industriRiskDto;
-    }
+        if (entity == null) return null;
 
-    private IndustriRisk toEntity(IndustriRiskDto dto) {
-        return new IndustriRisk(
-                dto.getId(),
-                dto.getCompetitiveness(),
-                dto.getEnvironmentalConcerns(),
-                dto.getFiscalPolicyDependence(),
-                dto.getBusinessCyclicality(),
-                dto.getInflationSensitivity(),
-                dto.getFxSensitivity(),
-                dto.getInterestRateSensitivity(),
-                dto.getIndustrySalesTrend(),
-                dto.getIndustryProfitability(),
-                dto.getIndustryStage(),
-                dto.getImportPenetration(),
-                dto.getIndustryFailureRate(),
-                dto.getSkilledLaborGap(),
-                dto.getProductPositioning(),
-                dto.getCapitalSensitivity(),
-                dto.getTechnologyDependence()
-        );
+        IndustriRiskDto dto = new IndustriRiskDto();
+        dto.setUUId(entity.getUUId());
+        dto.setCompetitiveness(entity.getCompetitiveness());
+        dto.setEnvironmentalConcerns(entity.getEnvironmentalConcerns());
+        dto.setFiscalPolicyDependence(entity.getFiscalPolicyDependence());
+        dto.setBusinessCyclicality(entity.getBusinessCyclicality());
+        dto.setInflationSensitivity(entity.getInflationSensitivity());
+        dto.setFxSensitivity(entity.getFxSensitivity());
+        dto.setInterestRateSensitivity(entity.getInterestRateSensitivity());
+        dto.setIndustrySalesTrend(entity.getIndustrySalesTrend());
+        dto.setIndustryProfitability(entity.getIndustryProfitability());
+        dto.setIndustryStage(entity.getIndustryStage());
+        dto.setImportPenetration(entity.getImportPenetration());
+        dto.setIndustryFailureRate(entity.getIndustryFailureRate());
+        dto.setSkilledLaborGap(entity.getSkilledLaborGap());
+        dto.setProductPositioning(entity.getProductPositioning());
+        dto.setCapitalSensitivity(entity.getCapitalSensitivity());
+        dto.setTechnologyDependence(entity.getTechnologyDependence());
+        return dto;
     }
 }

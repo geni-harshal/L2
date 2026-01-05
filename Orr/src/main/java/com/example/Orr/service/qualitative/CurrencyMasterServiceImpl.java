@@ -19,18 +19,18 @@ public class CurrencyMasterServiceImpl implements CurrencyMasterService {
     private CurrencyMasterDto toDto(CurrencyMaster entity) {
         CurrencyMasterDto dto = new CurrencyMasterDto();
         dto.setId(entity.getId());
-        dto.setCode(entity.getCode());
-        dto.setName(entity.getName());
-        dto.setSymbol(entity.getSymbol());
+        dto.setCurrencyCode(entity.getCurrencyCode());
+        dto.setCurrencyName(entity.getCurrencyName());
+        dto.setCurrencySymbol(entity.getCurrencySymbol());
         dto.setActive(entity.isActive());
         return dto;
     }
 
     private CurrencyMaster toEntity(CurrencyMasterDto dto) {
         CurrencyMaster entity = new CurrencyMaster();
-        entity.setCode(dto.getCode());
-        entity.setName(dto.getName());
-        entity.setSymbol(dto.getSymbol());
+        entity.setCurrencyCode(dto.getCurrencyCode());
+        entity.setCurrencyName(dto.getCurrencyName());
+        entity.setCurrencySymbol(dto.getCurrencySymbol());
         entity.setActive(dto.isActive());
         return entity;
     }
@@ -38,7 +38,7 @@ public class CurrencyMasterServiceImpl implements CurrencyMasterService {
     @Override
     public CurrencyMasterDto create(CurrencyMasterDto dto) {
 
-        Query query = new Query(Criteria.where("code").is(dto.getCode()));
+        Query query = new Query(Criteria.where("currencyCode").is(dto.getCurrencyCode()));
         if (mongoTemplate.exists(query, CurrencyMaster.class)) {
             throw new RuntimeException("Currency already exists");
         }
@@ -55,27 +55,27 @@ public class CurrencyMasterServiceImpl implements CurrencyMasterService {
     }
 
     @Override
-    public CurrencyMasterDto findByCode(String code) {
-        Query query = new Query(Criteria.where("code").is(code));
+    public CurrencyMasterDto findByCode(String currencyCode) {
+        Query query = new Query(Criteria.where("currencyCode").is(currencyCode));
         CurrencyMaster entity = mongoTemplate.findOne(query, CurrencyMaster.class);
         return entity != null ? toDto(entity) : null;
     }
 
     @Override
-    public CurrencyMasterDto update(String code, CurrencyMasterDto dto) {
-        Query query = new Query(Criteria.where("code").is(code));
+    public CurrencyMasterDto update(String currencyCode, CurrencyMasterDto dto) {
+        Query query = new Query(Criteria.where("currencyCode").is(currencyCode));
         Update update = new Update()
-                .set("name", dto.getName())
-                .set("symbol", dto.getSymbol())
+                .set("currencyName", dto.getCurrencyName())
+                .set("currencySymbol", dto.getCurrencySymbol())
                 .set("active", dto.isActive());
 
         mongoTemplate.findAndModify(query, update, CurrencyMaster.class);
-        return findByCode(code);
+        return findByCode(currencyCode);
     }
 
     @Override
-    public void delete(String code) {
-        Query query = new Query(Criteria.where("code").is(code));
+    public void delete(String currencyCode) {
+        Query query = new Query(Criteria.where("currencyCode").is(currencyCode));
         mongoTemplate.remove(query, CurrencyMaster.class);
     }
 }

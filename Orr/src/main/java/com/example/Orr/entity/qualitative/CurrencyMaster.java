@@ -12,19 +12,19 @@ public class CurrencyMaster {
     @Id
     private String id;
     @Indexed(unique = true)
-    private String code;
-    private String name;
-    private String symbol;
+    private String currencyCode;
+    private String currencyName;
+    private String currencySymbol;
     private boolean active = true;
 
 
     public CurrencyMaster() {
     }
 
-    public CurrencyMaster(String code, String name, String symbol, boolean active) {
-        this.code = code;
-        this.name = name;
-        this.symbol = symbol;
+    public CurrencyMaster(String currencyCode, String currencyName, String currencySymbol, boolean active) {
+        this.currencyCode = currencyCode;
+        this.currencyName = currencyName;
+        this.currencySymbol = currencySymbol;
         this.active = active;
     }
 

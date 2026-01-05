@@ -15,6 +15,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class AccountConduct {
     @Id
     private String id;
+    private String uUId;
     private Integer bounceCheques;
     private Integer ongoingCreditRelationship;
     private Integer delayInInstallments;

@@ -1,16 +1,16 @@
 package com.example.Orr.controller.qualitative;
 
 import com.example.Orr.dto.qualitative.OwnerAdditionalSupportDto;
-import com.example.Orr.entity.qualitative.OwnerAdditionalSupport;
 import com.example.Orr.service.qualitative.OwnerAdditionalSupportService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/owner-add-support")
+@RequestMapping("/api/owner-additional-support")
 public class OwnerAdditionalSupportController {
 
     @Autowired
@@ -18,41 +18,42 @@ public class OwnerAdditionalSupportController {
 
     @GetMapping("/all")
     public ResponseEntity<List<OwnerAdditionalSupportDto>> getAll() {
-        List<OwnerAdditionalSupportDto> list = ownerAdditionalSupportService.findAll();
-        return ResponseEntity.ok(list);
+        return ResponseEntity.ok(ownerAdditionalSupportService.findAll());
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<OwnerAdditionalSupportDto> getById(@PathVariable Integer id) {
-        OwnerAdditionalSupportDto dto = ownerAdditionalSupportService.findById(id);
-        if (dto != null) {
-            return ResponseEntity.ok(dto);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    @GetMapping("/{uUId}")
+    public ResponseEntity<OwnerAdditionalSupportDto> getByUUId(
+            @PathVariable String uUId
+    ) {
+        OwnerAdditionalSupportDto dto = ownerAdditionalSupportService.findByUUId(uUId);
+        return ResponseEntity.ok(dto);
     }
 
-    @PostMapping("/create")
-    public ResponseEntity<OwnerAdditionalSupportDto> create(@RequestBody OwnerAdditionalSupportDto dto) {
-        OwnerAdditionalSupportDto created = ownerAdditionalSupportService.createOwnerAdditionalSupport(dto);
-        return ResponseEntity.ok(created);
+    @PostMapping("/create/{uUId}")
+    public ResponseEntity<OwnerAdditionalSupportDto> create(
+            @PathVariable String uUId,
+            @RequestBody OwnerAdditionalSupportDto ownerAdditionalSupportDto
+    ) {
+        OwnerAdditionalSupportDto created =
+                ownerAdditionalSupportService.create(uUId, ownerAdditionalSupportDto);
+        return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 
-    @PutMapping("/update/{id}")
+    @PutMapping("/update/{uUId}")
     public ResponseEntity<OwnerAdditionalSupportDto> update(
-            @PathVariable Integer id,
-            @RequestBody OwnerAdditionalSupport dto) {
-        OwnerAdditionalSupportDto updated = ownerAdditionalSupportService.updateById(id, dto);
-        if (updated != null) {
-            return ResponseEntity.ok(updated);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+            @PathVariable String uUId,
+            @RequestBody OwnerAdditionalSupportDto ownerAdditionalSupportDto
+    ) {
+        OwnerAdditionalSupportDto updated =
+                ownerAdditionalSupportService.updateByUUId(uUId, ownerAdditionalSupportDto);
+        return ResponseEntity.ok(updated);
     }
 
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Integer id) {
-        ownerAdditionalSupportService.deleteById(id);
+    @DeleteMapping("/delete/{uUId}")
+    public ResponseEntity<Void> delete(
+            @PathVariable String uUId
+    ) {
+        ownerAdditionalSupportService.deleteByUUId(uUId);
         return ResponseEntity.noContent().build();
     }
 }

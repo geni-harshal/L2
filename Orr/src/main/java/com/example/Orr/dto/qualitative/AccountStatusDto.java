@@ -7,6 +7,7 @@ import lombok.Data;
 public class AccountStatusDto {
 
     private String id;
+    private String uUId;
     private Integer yearInBusiness;
     private Integer locationOfBusiness;
     private Integer relationshipAge;

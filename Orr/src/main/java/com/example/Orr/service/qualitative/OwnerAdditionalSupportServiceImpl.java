@@ -19,17 +19,6 @@ public class OwnerAdditionalSupportServiceImpl implements OwnerAdditionalSupport
     @Autowired
     private MongoTemplate mongoTemplate;
 
-    private OwnerAdditionalSupportDto toDto(OwnerAdditionalSupport entity) {
-       OwnerAdditionalSupportDto ownerAdditionalSupportDto=new OwnerAdditionalSupportDto();
-       ownerAdditionalSupportDto.setId(entity.getId());
-       ownerAdditionalSupportDto.setPersonalNetWorthScore(entity.getPersonalNetWorthScore());
-       return ownerAdditionalSupportDto;
-    }
-
-    private OwnerAdditionalSupport toEntity(OwnerAdditionalSupportDto dto) {
-        return new OwnerAdditionalSupport(dto.getId(), dto.getPersonalNetWorthScore());
-    }
-
     @Override
     public List<OwnerAdditionalSupportDto> findAll() {
         return mongoTemplate.findAll(OwnerAdditionalSupport.class)
@@ -39,32 +28,63 @@ public class OwnerAdditionalSupportServiceImpl implements OwnerAdditionalSupport
     }
 
     @Override
-    public OwnerAdditionalSupportDto findById(Integer id) {
-        OwnerAdditionalSupport entity = mongoTemplate.findById(id, OwnerAdditionalSupport.class);
-        return entity != null ? toDto(entity) : null;
+    public OwnerAdditionalSupportDto findByUUId(String uUId) {
+        OwnerAdditionalSupport entity = mongoTemplate.findOne(
+                Query.query(Criteria.where("uUId").is(uUId)),
+                OwnerAdditionalSupport.class
+        );
+        return toDto(entity);
     }
 
     @Override
-    public OwnerAdditionalSupportDto createOwnerAdditionalSupport(OwnerAdditionalSupportDto ownerAdditionalSupportDto) {
-        OwnerAdditionalSupport entity = toEntity(ownerAdditionalSupportDto);
+    public OwnerAdditionalSupportDto create(String uUId, OwnerAdditionalSupportDto dto) {
+
+        // prevent duplicate record
+        OwnerAdditionalSupport existing = mongoTemplate.findOne(
+                Query.query(Criteria.where("uUId").is(uUId)),
+                OwnerAdditionalSupport.class
+        );
+
+        if (existing != null) {
+            throw new RuntimeException(
+                    "OwnerAdditionalSupport already exists for UUID: " + uUId
+            );
+        }
+
+        OwnerAdditionalSupport entity = new OwnerAdditionalSupport();
+        entity.setUUId(uUId);
+        entity.setPersonalNetWorthScore(dto.getPersonalNetWorthScore());
+
         mongoTemplate.save(entity);
         return toDto(entity);
     }
 
     @Override
-    public OwnerAdditionalSupportDto updateById(Integer id, OwnerAdditionalSupport ownerAdditionalSupport) {
-        Query query = new Query(Criteria.where("id").is(id));
+    public OwnerAdditionalSupportDto updateByUUId(String uUId, OwnerAdditionalSupportDto dto) {
+
+        Query query = Query.query(Criteria.where("uUId").is(uUId));
         Update update = new Update()
-                .set("personalNetWorthScore", ownerAdditionalSupport.getPersonalNetWorthScore());
+                .set("personalNetWorthScore", dto.getPersonalNetWorthScore());
 
         mongoTemplate.updateFirst(query, update, OwnerAdditionalSupport.class);
-        OwnerAdditionalSupport updated = mongoTemplate.findById(id, OwnerAdditionalSupport.class);
-        return updated != null ? toDto(updated) : null;
+
+        return findByUUId(uUId);
     }
 
     @Override
-    public void deleteById(Integer id) {
-        Query query = new Query(Criteria.where("id").is(id));
-        mongoTemplate.remove(query, OwnerAdditionalSupport.class);
+    public void deleteByUUId(String uUId) {
+        mongoTemplate.remove(
+                Query.query(Criteria.where("uUId").is(uUId)),
+                OwnerAdditionalSupport.class
+        );
+    }
+
+    private OwnerAdditionalSupportDto toDto(OwnerAdditionalSupport entity) {
+        if (entity == null) return null;
+
+        OwnerAdditionalSupportDto dto = new OwnerAdditionalSupportDto();
+        dto.setUUId(entity.getUUId());
+        dto.setPersonalNetWorthScore(entity.getPersonalNetWorthScore());
+        return dto;
     }
 }

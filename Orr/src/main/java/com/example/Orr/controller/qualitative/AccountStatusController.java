@@ -3,6 +3,7 @@ package com.example.Orr.controller.qualitative;
 import com.example.Orr.dto.qualitative.AccountStatusDto;
 import com.example.Orr.service.qualitative.AccountStatusService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,40 +16,44 @@ public class AccountStatusController {
     @Autowired
     private AccountStatusService accountStatusService;
 
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<List<AccountStatusDto>> getAll() {
-        List<AccountStatusDto> list = accountStatusService.findAll();
-        return ResponseEntity.ok(list);
+        return ResponseEntity.ok(accountStatusService.findAll());
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<AccountStatusDto> getById(@PathVariable Integer id) {
-        AccountStatusDto dto = accountStatusService.findById(id);
-        if (dto == null) {
-            return ResponseEntity.notFound().build();
-        }
+    @GetMapping("/{uUId}")
+    public ResponseEntity<AccountStatusDto> getByUUId(
+            @PathVariable String uUId
+    ) {
+        AccountStatusDto dto = accountStatusService.findByUUId(uUId);
         return ResponseEntity.ok(dto);
     }
 
-    @PostMapping
-    public ResponseEntity<AccountStatusDto> create(@RequestBody AccountStatusDto dto) {
-        AccountStatusDto created = accountStatusService.create(dto);
-        return ResponseEntity.ok(created);
+    @PostMapping("/create/{uUId}")
+    public ResponseEntity<AccountStatusDto> create(
+            @PathVariable String uUId,
+            @RequestBody AccountStatusDto accountStatusDto
+    ) {
+        AccountStatusDto created =
+                accountStatusService.create(uUId, accountStatusDto);
+        return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<AccountStatusDto> update(@PathVariable Integer id,
-                                                   @RequestBody AccountStatusDto dto) {
-        AccountStatusDto updated = accountStatusService.updateById(id, dto);
-        if (updated == null) {
-            return ResponseEntity.notFound().build();
-        }
+    @PutMapping("/update/{uUId}")
+    public ResponseEntity<AccountStatusDto> update(
+            @PathVariable String uUId,
+            @RequestBody AccountStatusDto accountStatusDto
+    ) {
+        AccountStatusDto updated =
+                accountStatusService.updateByUUId(uUId, accountStatusDto);
         return ResponseEntity.ok(updated);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Integer id) {
-        accountStatusService.deleteById(id);
+    @DeleteMapping("/delete/{uUId}")
+    public ResponseEntity<Void> delete(
+            @PathVariable String uUId
+    ) {
+        accountStatusService.deleteByUUId(uUId);
         return ResponseEntity.noContent().build();
     }
 }

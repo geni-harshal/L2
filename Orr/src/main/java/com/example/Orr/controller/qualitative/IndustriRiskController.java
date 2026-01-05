@@ -1,54 +1,59 @@
 package com.example.Orr.controller.qualitative;
 
 import com.example.Orr.dto.qualitative.IndustriRiskDto;
-import com.example.Orr.entity.qualitative.IndustriRisk;
 import com.example.Orr.service.qualitative.IndustriRiskService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/industri-risk")
+@RequestMapping("/api/industry-risk")
 public class IndustriRiskController {
 
     @Autowired
     private IndustriRiskService industriRiskService;
 
     @GetMapping("/all")
-    public ResponseEntity<List<IndustriRiskDto>> getAllIndustriRisks() {
-        List<IndustriRiskDto> list = industriRiskService.findAll();
-        return ResponseEntity.ok(list);
+    public ResponseEntity<List<IndustriRiskDto>> getAll() {
+        return ResponseEntity.ok(industriRiskService.findAll());
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<IndustriRiskDto> getIndustriRiskById(@PathVariable Integer id) {
-        IndustriRiskDto dto = industriRiskService.findById(id);
-        if (dto == null) {
-            return ResponseEntity.notFound().build();
-        }
+    @GetMapping("/{uUId}")
+    public ResponseEntity<IndustriRiskDto> getByUUId(
+            @PathVariable String uUId
+    ) {
+        IndustriRiskDto dto = industriRiskService.findByUUId(uUId);
         return ResponseEntity.ok(dto);
     }
 
-    @PostMapping("/create")
-    public ResponseEntity<IndustriRiskDto> createIndustriRisk(@RequestBody IndustriRiskDto industriRiskDto) {
-        IndustriRiskDto created = industriRiskService.createIndustriRisk(industriRiskDto);
-        return ResponseEntity.ok(created);
+    @PostMapping("/create/{uUId}")
+    public ResponseEntity<IndustriRiskDto> create(
+            @PathVariable String uUId,
+            @RequestBody IndustriRiskDto industriRiskDto
+    ) {
+        IndustriRiskDto created =
+                industriRiskService.create(uUId, industriRiskDto);
+        return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 
-    @PutMapping("/update/{id}")
-    public ResponseEntity<IndustriRiskDto> updateIndustriRisk(@PathVariable Integer id, @RequestBody IndustriRisk industriRisk) {
-        IndustriRiskDto updated = industriRiskService.updateById(id, industriRisk);
-        if (updated == null) {
-            return ResponseEntity.notFound().build();
-        }
+    @PutMapping("/update/{uUId}")
+    public ResponseEntity<IndustriRiskDto> update(
+            @PathVariable String uUId,
+            @RequestBody IndustriRiskDto industriRiskDto
+    ) {
+        IndustriRiskDto updated =
+                industriRiskService.updateByUUId(uUId, industriRiskDto);
         return ResponseEntity.ok(updated);
     }
 
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Void> deleteIndustriRisk(@PathVariable Integer id) {
-        industriRiskService.deleteById(id);
+    @DeleteMapping("/delete/{uUId}")
+    public ResponseEntity<Void> delete(
+            @PathVariable String uUId
+    ) {
+        industriRiskService.deleteByUUId(uUId);
         return ResponseEntity.noContent().build();
     }
 }

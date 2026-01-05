@@ -25,9 +25,9 @@ public class CurrencyMasterController {
         return ResponseEntity.ok(service.findAll());
     }
 
-    @GetMapping("/{code}")
-    public ResponseEntity<CurrencyMasterDto> getByCode(@PathVariable String code) {
-        return ResponseEntity.ok(service.findByCode(code));
+    @GetMapping("/{currency-code}")
+    public ResponseEntity<CurrencyMasterDto> getByCode(@PathVariable String currencyCode) {
+        return ResponseEntity.ok(service.findByCode(currencyCode));
     }
 }
 

@@ -6,6 +6,7 @@ import lombok.Data;
 @Data
 public class IndustriRiskDto {
     private String id;
+    private String uUId;
     private String competitiveness;
     private String environmentalConcerns;
     private String fiscalPolicyDependence;

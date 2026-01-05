@@ -21,26 +21,52 @@ public class AccountConductServiceImpl implements AccountConductService {
 
     @Override
     public List<AccountConductDto> findAll() {
-        List<AccountConduct> list = mongoTemplate.findAll(AccountConduct.class);
-        return list.stream().map(this::toDto).collect(Collectors.toList());
+        return mongoTemplate.findAll(AccountConduct.class)
+                .stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public AccountConductDto findById(Integer id) {
-        AccountConduct accountConduct = mongoTemplate.findById(id, AccountConduct.class);
-        return accountConduct != null ? toDto(accountConduct) : null;
+    public AccountConductDto findByUUId(String uUId) {
+        AccountConduct entity = mongoTemplate.findOne(
+                Query.query(Criteria.where("uUId").is(uUId)),
+                AccountConduct.class
+        );
+        return toDto(entity);
     }
 
     @Override
-    public AccountConductDto create(AccountConductDto dto) {
-        AccountConduct entity = toEntity(dto);
-        AccountConduct saved = mongoTemplate.save(entity);
-        return toDto(saved);
+    public AccountConductDto create(String uUId, AccountConductDto dto) {
+
+        // prevent duplicate record for same UUID
+        AccountConduct existing = mongoTemplate.findOne(
+                Query.query(Criteria.where("uUId").is(uUId)),
+                AccountConduct.class
+        );
+
+        if (existing != null) {
+            throw new RuntimeException("AccountConduct already exists for UUID: " + uUId);
+        }
+
+        AccountConduct entity = new AccountConduct();
+        entity.setUUId(uUId);
+        entity.setBounceCheques(dto.getBounceCheques());
+        entity.setOngoingCreditRelationship(dto.getOngoingCreditRelationship());
+        entity.setDelayInInstallments(dto.getDelayInInstallments());
+        entity.setDelinquencyHistory(dto.getDelinquencyHistory());
+        entity.setWriteOff(dto.getWriteOff());
+        entity.setFraudLitigation(dto.getFraudLitigation());
+
+        mongoTemplate.save(entity);
+        return toDto(entity);
     }
 
     @Override
-    public AccountConductDto updateById(Integer id, AccountConductDto dto) {
-        Query query = new Query(Criteria.where("id").is(id));
+    public AccountConductDto updateByUUId(String uUId, AccountConductDto dto) {
+
+        Query query = Query.query(Criteria.where("uUId").is(uUId));
+
         Update update = new Update()
                 .set("bounceCheques", dto.getBounceCheques())
                 .set("ongoingCreditRelationship", dto.getOngoingCreditRelationship())
@@ -49,38 +75,30 @@ public class AccountConductServiceImpl implements AccountConductService {
                 .set("writeOff", dto.getWriteOff())
                 .set("fraudLitigation", dto.getFraudLitigation());
 
-        AccountConduct updated = mongoTemplate.findAndModify(query, update, AccountConduct.class);
-        return updated != null ? toDto(updated) : null;
+        mongoTemplate.updateFirst(query, update, AccountConduct.class);
+
+        return findByUUId(uUId);
     }
 
     @Override
-    public void deleteById(Integer id) {
-        Query query = new Query(Criteria.where("id").is(id));
-        mongoTemplate.remove(query, AccountConduct.class);
+    public void deleteByUUId(String uUId) {
+        mongoTemplate.remove(
+                Query.query(Criteria.where("uUId").is(uUId)),
+                AccountConduct.class
+        );
     }
 
     private AccountConductDto toDto(AccountConduct entity) {
-        AccountConductDto accountConductDto= new AccountConductDto();
-                accountConductDto.setId(entity.getId());
-                accountConductDto.setBounceCheques(entity.getBounceCheques());
-                accountConductDto.setWriteOff(entity.getWriteOff());
-                accountConductDto.setFraudLitigation(entity.getFraudLitigation());
-                accountConductDto.setDelinquencyHistory(entity.getDelinquencyHistory());
-                accountConductDto.setDelayInInstallments(entity.getDelayInInstallments());
-                accountConductDto.setOngoingCreditRelationship(entity.getOngoingCreditRelationship());
+        if (entity == null) return null;
 
-        return accountConductDto;
-    }
-
-    private AccountConduct toEntity(AccountConductDto dto) {
-        return new AccountConduct(
-                dto.getId(),
-                dto.getBounceCheques(),
-                dto.getOngoingCreditRelationship(),
-                dto.getDelayInInstallments(),
-                dto.getDelinquencyHistory(),
-                dto.getWriteOff(),
-                dto.getFraudLitigation()
-        );
+        AccountConductDto dto = new AccountConductDto();
+        dto.setUUId(entity.getUUId());
+        dto.setBounceCheques(entity.getBounceCheques());
+        dto.setOngoingCreditRelationship(entity.getOngoingCreditRelationship());
+        dto.setDelayInInstallments(entity.getDelayInInstallments());
+        dto.setDelinquencyHistory(entity.getDelinquencyHistory());
+        dto.setWriteOff(entity.getWriteOff());
+        dto.setFraudLitigation(entity.getFraudLitigation());
+        return dto;
     }
 }

@@ -14,6 +14,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class AccountStatus {
     @Id
    private  String id;
+    private String uUId;
     private Integer yearInBusiness;
     private Integer locationOfBusiness;
     private Integer relationshipAge;

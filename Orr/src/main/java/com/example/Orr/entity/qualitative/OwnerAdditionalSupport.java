@@ -14,5 +14,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class OwnerAdditionalSupport {
     @Id
    private String id;
+    private String uUId;
     private Integer personalNetWorthScore;
 }

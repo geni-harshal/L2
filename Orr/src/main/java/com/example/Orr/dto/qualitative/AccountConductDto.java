@@ -6,6 +6,7 @@ import lombok.Data;
 @Data
 public class AccountConductDto {
     private String id;
+    private String uUId;
     private Integer bounceCheques;
     private Integer ongoingCreditRelationship;
     private Integer delayInInstallments;

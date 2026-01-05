@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 @Data
 public class OwnerAdditionalSupportDto {
     private String id;
+    private String uUId;
     private Integer personalNetWorthScore;
 
 }

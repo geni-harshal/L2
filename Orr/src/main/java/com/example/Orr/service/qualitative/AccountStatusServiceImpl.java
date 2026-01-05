@@ -19,35 +19,6 @@ public class AccountStatusServiceImpl implements AccountStatusService {
     @Autowired
     private MongoTemplate mongoTemplate;
 
-    AccountStatusServiceImpl(MongoTemplate mongoTemplate){
-        this.mongoTemplate=mongoTemplate;
-    }
-
-    private AccountStatusDto toDto(AccountStatus accountStatus) {
-        AccountStatusDto accountStatusDto= new AccountStatusDto();
-        accountStatusDto.setId(accountStatus.getId());
-        accountStatusDto.setAuditorOpinion(accountStatus.getAuditorOpinion());
-        accountStatusDto.setAuditorQuality(accountStatus.getAuditorQuality());
-        accountStatusDto.setRelationshipAge(accountStatus.getRelationshipAge());
-        accountStatusDto.setNationalizationScheme(accountStatus.getNationalizationScheme());
-        accountStatusDto.setLocationOfBusiness(accountStatus.getLocationOfBusiness());
-        accountStatusDto.setYearInBusiness(accountStatus.getYearInBusiness());
-        return accountStatusDto;
-    }
-
-    private AccountStatus toEntity(AccountStatusDto dto) {
-        if (dto == null) return null;
-        return new AccountStatus(
-                dto.getId(),
-                dto.getYearInBusiness(),
-                dto.getLocationOfBusiness(),
-                dto.getRelationshipAge(),
-                dto.getAuditorQuality(),
-                dto.getAuditorOpinion(),
-                dto.getNationalizationScheme()
-        );
-    }
-
     @Override
     public List<AccountStatusDto> findAll() {
         return mongoTemplate.findAll(AccountStatus.class)
@@ -57,20 +28,46 @@ public class AccountStatusServiceImpl implements AccountStatusService {
     }
 
     @Override
-    public AccountStatusDto findById(Integer id) {
-        AccountStatus accountStatus = mongoTemplate.findById(id, AccountStatus.class);
-        return toDto(accountStatus);
+    public AccountStatusDto findByUUId(String uUId) {
+        AccountStatus entity = mongoTemplate.findOne(
+                Query.query(Criteria.where("uUId").is(uUId)),
+                AccountStatus.class
+        );
+        return toDto(entity);
     }
 
     @Override
-    public AccountStatusDto create(AccountStatusDto dto) {
-        AccountStatus saved = mongoTemplate.save(toEntity(dto));
-        return toDto(saved);
+    public AccountStatusDto create(String uUId, AccountStatusDto dto) {
+
+        AccountStatus existing = mongoTemplate.findOne(
+                Query.query(Criteria.where("uUId").is(uUId)),
+                AccountStatus.class
+        );
+
+        if (existing != null) {
+            throw new RuntimeException(
+                    "AccountStatus already exists for UUID: " + uUId
+            );
+        }
+
+        AccountStatus entity = new AccountStatus();
+        entity.setUUId(uUId);
+        entity.setYearInBusiness(dto.getYearInBusiness());
+        entity.setLocationOfBusiness(dto.getLocationOfBusiness());
+        entity.setRelationshipAge(dto.getRelationshipAge());
+        entity.setAuditorQuality(dto.getAuditorQuality());
+        entity.setAuditorOpinion(dto.getAuditorOpinion());
+        entity.setNationalizationScheme(dto.getNationalizationScheme());
+
+        mongoTemplate.save(entity);
+        return toDto(entity);
     }
 
     @Override
-    public AccountStatusDto updateById(Integer id, AccountStatusDto dto) {
-        Query query = new Query(Criteria.where("id").is(id));
+    public AccountStatusDto updateByUUId(String uUId, AccountStatusDto dto) {
+
+        Query query = Query.query(Criteria.where("uUId").is(uUId));
+
         Update update = new Update()
                 .set("yearInBusiness", dto.getYearInBusiness())
                 .set("locationOfBusiness", dto.getLocationOfBusiness())
@@ -79,13 +76,30 @@ public class AccountStatusServiceImpl implements AccountStatusService {
                 .set("auditorOpinion", dto.getAuditorOpinion())
                 .set("nationalizationScheme", dto.getNationalizationScheme());
 
-        AccountStatus updated = mongoTemplate.findAndModify(query, update, AccountStatus.class);
-        return toDto(updated);
+        mongoTemplate.updateFirst(query, update, AccountStatus.class);
+
+        return findByUUId(uUId);
     }
 
     @Override
-    public void deleteById(Integer id) {
-        Query query = new Query(Criteria.where("id").is(id));
-        mongoTemplate.remove(query, AccountStatus.class);
+    public void deleteByUUId(String uUId) {
+        mongoTemplate.remove(
+                Query.query(Criteria.where("uUId").is(uUId)),
+                AccountStatus.class
+        );
+    }
+
+    private AccountStatusDto toDto(AccountStatus entity) {
+        if (entity == null) return null;
+
+        AccountStatusDto dto = new AccountStatusDto();
+        dto.setUUId(entity.getUUId());
+        dto.setYearInBusiness(entity.getYearInBusiness());
+        dto.setLocationOfBusiness(entity.getLocationOfBusiness());
+        dto.setRelationshipAge(entity.getRelationshipAge());
+        dto.setAuditorQuality(entity.getAuditorQuality());
+        dto.setAuditorOpinion(entity.getAuditorOpinion());
+        dto.setNationalizationScheme(entity.getNationalizationScheme());
+        return dto;
     }
 }
