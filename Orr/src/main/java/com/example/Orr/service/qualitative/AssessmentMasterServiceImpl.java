@@ -35,8 +35,8 @@ public class AssessmentMasterServiceImpl implements AssessmentMasterService {
         return new AssessmentMasterDto(
                 toGroupDtoMap(fetchMaster().getOASA()),
                 null,
-                null,
                 null
+
         );
     }
 
@@ -45,7 +45,6 @@ public class AssessmentMasterServiceImpl implements AssessmentMasterService {
         return new AssessmentMasterDto(
                 null,
                 toGroupDtoMap(fetchMaster().getSOAA()),
-                null,
                 null
         );
     }
@@ -55,20 +54,12 @@ public class AssessmentMasterServiceImpl implements AssessmentMasterService {
         return new AssessmentMasterDto(
                 null,
                 null,
-                toGroupDtoMap(fetchMaster().getCOAA()),
-                null
+                toGroupDtoMap(fetchMaster().getCOAA())
+
         );
     }
 
-    @Override
-    public AssessmentMasterDto getIRA() {
-        return new AssessmentMasterDto(
-                null,
-                null,
-                null,
-                toGroupDtoMap(fetchMaster().getIRA())
-        );
-    }
+
 
 
     @Override
@@ -124,8 +115,7 @@ public class AssessmentMasterServiceImpl implements AssessmentMasterService {
         return new AssessmentMasterDto(
                 toGroupDtoMap(master.getOASA()),
                 toGroupDtoMap(master.getSOAA()),
-                toGroupDtoMap(master.getCOAA()),
-                toGroupDtoMap(master.getIRA())
+                toGroupDtoMap(master.getCOAA())
         );
     }
 

@@ -21,6 +21,5 @@ public class AssessmentMaster {
     private Map<String, AssessmentGroup> OASA;
     private Map<String, AssessmentGroup> SOAA;
     private Map<String, AssessmentGroup> COAA;
-    private Map<String, AssessmentGroup> IRA;
 }
 

@@ -14,5 +14,4 @@ public class AssessmentMasterDto {
     private Map<String, AssessmentGroupDto> OASA;
     private Map<String, AssessmentGroupDto> SOAA;
     private Map<String, AssessmentGroupDto> COAA;
-    private Map<String , AssessmentGroupDto>IRA;
 }
