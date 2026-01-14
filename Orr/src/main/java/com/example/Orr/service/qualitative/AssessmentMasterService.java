@@ -9,7 +9,7 @@ public interface AssessmentMasterService {
     AssessmentMasterDto getOASA();
     AssessmentMasterDto getSOAA();
     AssessmentMasterDto getCOAA();
-
+    AssessmentGroupDto findBySectionAndSubgroupId(String section, String subgroupId);
 
     void addSubGroup(String section, String key, AssessmentGroupDto dto);
 

@@ -19,6 +19,17 @@ public class AssessmentMasterController {
         return service.getAssessmentMaster();
     }
 
+    @GetMapping("/{section}/{subgroupId}")
+    public ResponseEntity<AssessmentGroupDto> findBySectionAndSubgroupId(
+            @PathVariable String section,
+            @PathVariable String subgroupId) {
+
+        AssessmentGroupDto response =
+                service.findBySectionAndSubgroupId(section, subgroupId);
+
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("/create/{section}/{key}")
     public ResponseEntity<?> addSubGroup(
             @PathVariable String section,

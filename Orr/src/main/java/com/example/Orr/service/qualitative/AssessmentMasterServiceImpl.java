@@ -59,6 +59,40 @@ public class AssessmentMasterServiceImpl implements AssessmentMasterService {
         );
     }
 
+    private Map<String, AssessmentGroup> getSectionMap(
+            AssessmentMaster master, String section) {
+
+        if (master == null) {
+            throw new RuntimeException("Assessment master is null");
+        }
+
+        return switch (section.toUpperCase()) {
+            case "OASA" -> master.getOASA();
+            case "SOAA" -> master.getSOAA();
+            case "COAA" -> master.getCOAA();
+            default -> throw new IllegalArgumentException("Invalid section: " + section);
+        };
+    }
+
+
+    @Override
+    public AssessmentGroupDto findBySectionAndSubgroupId(String section, String subgroupId) {
+
+        AssessmentMaster master = fetchMaster();
+
+        Map<String, AssessmentGroup> groupMap = getSectionMap(master, section);
+
+        return groupMap.values()
+                .stream()
+                .filter(g -> subgroupId.equals(g.getSubgroupId()))
+                .findFirst()
+                .map(this::toGroupDto)
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "SubgroupId not found: " + subgroupId + " in section: " + section
+                        )
+                );
+    }
 
 
 
