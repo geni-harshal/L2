@@ -4,11 +4,10 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.List;
 import java.util.Map;
 
-@Document(collection = "financial_statement")
 @Data
+@Document(collection = "financial_statements")
 public class FinancialStatementEntity {
 
     @Id
@@ -17,15 +16,5 @@ public class FinancialStatementEntity {
     private String borrowerName;
     private String currency;
     private String borrowerClassification;
-
-    private List<Integer> evaluationYears;
-
-    private Map<String, SectionNodeEntity> balanceSheet;
-    private Map<String, SectionNodeEntity> profitAndLoss;
-
-    private Map<String, RatioCategoryEntity> financialRatios;
-
-    private Map<Integer, Boolean> checksAndBalances;
-
-
+    private Map<Integer, YearlyFinancialDataEntity> years;
 }

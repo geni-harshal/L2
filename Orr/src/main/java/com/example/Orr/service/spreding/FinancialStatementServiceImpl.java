@@ -1,13 +1,9 @@
 package com.example.Orr.service.spreding;
 
 import com.example.Orr.dto.spreding.FinancialStatementEntityDto;
-import com.example.Orr.dto.spreding.RatioCategoryEntityDto;
-import com.example.Orr.dto.spreding.RatioEntityDto;
-import com.example.Orr.dto.spreding.SectionNodeEntityDto;
+import com.example.Orr.dto.spreding.YearlyFinancialDataEntityDto;
 import com.example.Orr.entity.spreding.FinancialStatementEntity;
-import com.example.Orr.entity.spreding.RatioCategoryEntity;
-import com.example.Orr.entity.spreding.RatioEntity;
-import com.example.Orr.entity.spreding.SectionNodeEntity;
+import com.example.Orr.entity.spreding.YearlyFinancialDataEntity;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -18,279 +14,242 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class FinancialStatementServiceImpl
-        implements FinancialStatementService {
+public class FinancialStatementServiceImpl implements FinancialStatementService {
 
     private final MongoTemplate mongoTemplate;
 
-    public FinancialStatementServiceImpl(
-            MongoTemplate mongoTemplate) {
+    public FinancialStatementServiceImpl(MongoTemplate mongoTemplate) {
         this.mongoTemplate = mongoTemplate;
     }
 
-
+    /* =========================
+       STATEMENT LEVEL CRUD
+       ========================= */
 
     @Override
-    public FinancialStatementEntityDto create(
-            FinancialStatementEntityDto dto) {
+    public String create(FinancialStatementEntityDto dto) {
 
-        FinancialStatementEntity entity = toEntity(dto);
-        entity.setId(null);
+        FinancialStatementEntity entity = new FinancialStatementEntity();
+        entity.setBorrowerName(dto.getBorrowerName());
+        entity.setCurrency(dto.getCurrency());
+        entity.setBorrowerClassification(dto.getBorrowerClassification());
+        entity.setYears(new LinkedHashMap<>());
 
-        FinancialStatementEntity saved =
-                mongoTemplate.save(entity);
-
-        return toDto(saved);
+        mongoTemplate.save(entity);
+        return entity.getId();
     }
 
+    @Override
+    public FinancialStatementEntityDto getById(String id) {
+
+        FinancialStatementEntity entity =
+                mongoTemplate.findById(id, FinancialStatementEntity.class);
+
+        if (entity == null) {
+            throw new RuntimeException("Financial Statement not found");
+        }
+
+        return toStatementDto(entity);
+    }
+
+    @Override
+    public List<FinancialStatementEntityDto> getAll() {
+
+        return mongoTemplate.findAll(FinancialStatementEntity.class)
+                .stream()
+                .map(this::toStatementDto)
+                .toList();
+    }
 
     @Override
     public FinancialStatementEntityDto update(
             String id,
             FinancialStatementEntityDto dto) {
 
-        Query query = Query.query(
-                Criteria.where("_id").is(id));
-
-        FinancialStatementEntity existing =
-                mongoTemplate.findOne(
-                        query,
-                        FinancialStatementEntity.class);
-
-        if (existing == null) {
-            throw new IllegalArgumentException(
-                    "FinancialStatement not found");
-        }
-
-        FinancialStatementEntity updated =
-                toEntity(dto);
-        updated.setId(existing.getId());
-
-        return toDto(mongoTemplate.save(updated));
-    }
-
-
-    @Override
-    public FinancialStatementEntityDto getById(
-            String id) {
-
         FinancialStatementEntity entity =
-                mongoTemplate.findById(
-                        id,
-                        FinancialStatementEntity.class);
+                mongoTemplate.findById(id, FinancialStatementEntity.class);
 
         if (entity == null) {
-            throw new IllegalArgumentException(
-                    "FinancialStatement not found");
+            throw new RuntimeException("Financial Statement not found");
         }
 
-        return toDto(entity);
+        entity.setBorrowerName(dto.getBorrowerName());
+        entity.setCurrency(dto.getCurrency());
+        entity.setBorrowerClassification(dto.getBorrowerClassification());
+
+        mongoTemplate.save(entity);
+        return toStatementDto(entity);
     }
-
-    @Override
-    public List<FinancialStatementEntityDto> getAll() {
-
-        return mongoTemplate.findAll(
-                        FinancialStatementEntity.class)
-                .stream()
-                .map(this::toDto)
-                .toList();
-    }
-
 
     @Override
     public void delete(String id) {
 
-        Query query = Query.query(
-                Criteria.where("_id").is(id));
-
-        mongoTemplate.remove(
-                query,
-                FinancialStatementEntity.class);
+        Query query = Query.query(Criteria.where("_id").is(id));
+        mongoTemplate.remove(query, FinancialStatementEntity.class);
     }
 
+    @Override
+    public String createStatement(
+            String borrowerName,
+            String currency,
+            String borrowerClassification) {
 
+        FinancialStatementEntity entity = new FinancialStatementEntity();
+        entity.setBorrowerName(borrowerName);
+        entity.setCurrency(currency);
+        entity.setBorrowerClassification(borrowerClassification);
+        entity.setYears(new LinkedHashMap<>());
 
-    private FinancialStatementEntity toEntity(
-            FinancialStatementEntityDto dto) {
+        mongoTemplate.save(entity);
+        return entity.getId();
+    }
+
+    /* =========================
+       YEAR LEVEL CRUD
+       ========================= */
+
+    @Override
+    public FinancialStatementEntityDto upsertYear(
+            String id,
+            Integer year,
+            YearlyFinancialDataEntityDto yearDto) {
 
         FinancialStatementEntity entity =
-                new FinancialStatementEntity();
+                mongoTemplate.findById(id, FinancialStatementEntity.class);
 
-        entity.setId(dto.getId());
-        entity.setBorrowerName(dto.getBorrowerName());
-        entity.setCurrency(dto.getCurrency());
-        entity.setBorrowerClassification(
-                dto.getBorrowerClassification());
-        entity.setEvaluationYears(dto.getEvaluationYears());
-        entity.setChecksAndBalances(
-                dto.getChecksAndBalances());
-
-
-
-
-
-        Map<String, SectionNodeEntity> bs =
-                new LinkedHashMap<>();
-
-        if (dto.getBalanceSheet() != null) {
-            dto.getBalanceSheet().forEach((k, v) -> {
-                SectionNodeEntity s =
-                        new SectionNodeEntity();
-                s.setName(v.getName());
-                s.setLineItems(v.getLineItems());
-                bs.put(k, s);
-            });
+        if (entity == null) {
+            throw new RuntimeException("Financial Statement not found");
         }
-        entity.setBalanceSheet(bs);
 
-
-
-        Map<String, SectionNodeEntity> pl =
-                new LinkedHashMap<>();
-
-        if (dto.getProfitAndLoss() != null) {
-            dto.getProfitAndLoss().forEach((k, v) -> {
-                SectionNodeEntity s =
-                        new SectionNodeEntity();
-                s.setName(v.getName());
-                s.setLineItems(v.getLineItems());
-                pl.put(k, s);
-            });
+        if (entity.getYears() == null) {
+            entity.setYears(new LinkedHashMap<>());
         }
-        entity.setProfitAndLoss(pl);
 
+        entity.getYears().put(year, toYearEntity(yearDto));
+        mongoTemplate.save(entity);
 
+        // ✅ RETURN ENTIRE DATA
+        return toStatementDto(entity);
+    }
 
-        Map<String, RatioCategoryEntity> ratioMap =
-                new LinkedHashMap<>();
+    @Override
+    public void createYear(
+            String statementId,
+            Integer year,
+            YearlyFinancialDataEntityDto dto) {
 
-        if (dto.getFinancialRatios() != null) {
-            dto.getFinancialRatios().forEach((k, v) -> {
+        FinancialStatementEntity entity =
+                mongoTemplate.findById(statementId, FinancialStatementEntity.class);
 
-                RatioCategoryEntity category =
-                        new RatioCategoryEntity();
-                category.setCategoryName(
-                        v.getCategoryName());
-
-                List<RatioEntity> ratioList =
-                        v.getRatios() == null
-                                ? List.of()
-                                : v.getRatios()
-                                .stream()
-                                .map(r -> {
-                                    RatioEntity e =
-                                            new RatioEntity();
-                                    e.setName(r.getName());
-                                    e.setFormula(
-                                            r.getFormula());
-                                    e.setValues(
-                                            r.getValues());
-                                    return e;
-                                })
-                                .toList();
-
-                category.setRatios(ratioList);
-                ratioMap.put(k, category);
-            });
+        if (entity == null) {
+            throw new RuntimeException("Financial Statement not found");
         }
-        entity.setFinancialRatios(ratioMap);
 
+        if (entity.getYears() != null && entity.getYears().containsKey(year)) {
+            throw new RuntimeException("Year already exists");
+        }
+
+        if (entity.getYears() == null) {
+            entity.setYears(new LinkedHashMap<>());
+        }
+
+        entity.getYears().put(year, toYearEntity(dto));
+        mongoTemplate.save(entity);
+    }
+
+    @Override
+    public YearlyFinancialDataEntityDto getYear(
+            String id,
+            Integer year) {
+
+        FinancialStatementEntity entity =
+                mongoTemplate.findById(id, FinancialStatementEntity.class);
+
+        if (entity == null || entity.getYears() == null
+                || !entity.getYears().containsKey(year)) {
+            throw new RuntimeException("Year not found");
+        }
+
+        return toYearDto(entity.getYears().get(year));
+    }
+
+    @Override
+    public void deleteYear(
+            String id,
+            Integer year) {
+
+        FinancialStatementEntity entity =
+                mongoTemplate.findById(id, FinancialStatementEntity.class);
+
+        if (entity == null || entity.getYears() == null) {
+            throw new RuntimeException("Financial Statement not found");
+        }
+
+        entity.getYears().remove(year);
+        mongoTemplate.save(entity);
+    }
+
+    @Override
+    public Map<Integer, YearlyFinancialDataEntityDto> getAllYears(
+            String statementId) {
+
+        FinancialStatementEntity entity =
+                mongoTemplate.findById(statementId, FinancialStatementEntity.class);
+
+        if (entity == null || entity.getYears() == null) {
+            throw new RuntimeException("Financial Statement not found");
+        }
+
+        Map<Integer, YearlyFinancialDataEntityDto> result = new LinkedHashMap<>();
+        entity.getYears().forEach((year, yearEntity) ->
+                result.put(year, toYearDto(yearEntity)));
+
+        return result;
+    }
+
+    /* =========================
+       MAPPING (INTEGRATED)
+       ========================= */
+
+    private YearlyFinancialDataEntity toYearEntity(
+            YearlyFinancialDataEntityDto dto) {
+
+        YearlyFinancialDataEntity entity = new YearlyFinancialDataEntity();
+        entity.setBalanceSheet(dto.getBalanceSheet());
+        entity.setProfitAndLoss(dto.getProfitAndLoss());
+        entity.setFinancialRatios(dto.getFinancialRatios());
+        entity.setChecksAndBalances(dto.getChecksAndBalances());
         return entity;
     }
 
+    private YearlyFinancialDataEntityDto toYearDto(
+            YearlyFinancialDataEntity entity) {
 
+        YearlyFinancialDataEntityDto dto = new YearlyFinancialDataEntityDto();
+        dto.setBalanceSheet(entity.getBalanceSheet());
+        dto.setProfitAndLoss(entity.getProfitAndLoss());
+        dto.setFinancialRatios(entity.getFinancialRatios());
+        dto.setChecksAndBalances(entity.getChecksAndBalances());
+        return dto;
+    }
 
-
-
-
-    private FinancialStatementEntityDto toDto(
+    private FinancialStatementEntityDto toStatementDto(
             FinancialStatementEntity entity) {
 
-        FinancialStatementEntityDto dto =
-                new FinancialStatementEntityDto();
-
+        FinancialStatementEntityDto dto = new FinancialStatementEntityDto();
         dto.setId(entity.getId());
         dto.setBorrowerName(entity.getBorrowerName());
         dto.setCurrency(entity.getCurrency());
-        dto.setBorrowerClassification(
-                entity.getBorrowerClassification());
-        dto.setEvaluationYears(
-                entity.getEvaluationYears());
-        dto.setChecksAndBalances(
-                entity.getChecksAndBalances());
+        dto.setBorrowerClassification(entity.getBorrowerClassification());
 
-
-
-        Map<String, SectionNodeEntityDto> bs =
-                new LinkedHashMap<>();
-
-        if (entity.getBalanceSheet() != null) {
-            entity.getBalanceSheet().forEach((k, v) -> {
-                SectionNodeEntityDto s =
-                        new SectionNodeEntityDto();
-                s.setName(v.getName());
-                s.setLineItems(v.getLineItems());
-                bs.put(k, s);
-            });
+        if (entity.getYears() != null) {
+            Map<Integer, YearlyFinancialDataEntityDto> years =
+                    new LinkedHashMap<>();
+            entity.getYears().forEach((year, yearEntity) ->
+                    years.put(year, toYearDto(yearEntity)));
+            dto.setYears(years);
         }
-        dto.setBalanceSheet(bs);
-
-
-
-
-        Map<String, SectionNodeEntityDto> pl =
-                new LinkedHashMap<>();
-
-        if (entity.getProfitAndLoss() != null) {
-            entity.getProfitAndLoss().forEach((k, v) -> {
-                SectionNodeEntityDto s =
-                        new SectionNodeEntityDto();
-                s.setName(v.getName());
-                s.setLineItems(v.getLineItems());
-                pl.put(k, s);
-            });
-        }
-        dto.setProfitAndLoss(pl);
-
-
-
-
-        Map<String, RatioCategoryEntityDto> ratioMap =
-                new LinkedHashMap<>();
-
-        if (entity.getFinancialRatios() != null) {
-            entity.getFinancialRatios().forEach((k, v) -> {
-
-                RatioCategoryEntityDto cat =
-                        new RatioCategoryEntityDto();
-                cat.setCategoryName(
-                        v.getCategoryName());
-
-                List<RatioEntityDto> ratios =
-                        v.getRatios() == null
-                                ? List.of()
-                                : v.getRatios()
-                                .stream()
-                                .map(r -> {
-                                    RatioEntityDto d =
-                                            new RatioEntityDto();
-                                    d.setName(r.getName());
-                                    d.setFormula(
-                                            r.getFormula());
-                                    d.setValues(
-                                            r.getValues());
-                                    return d;
-                                })
-                                .toList();
-
-                cat.setRatios(ratios);
-                ratioMap.put(k, cat);
-            });
-        }
-        dto.setFinancialRatios(ratioMap);
 
         return dto;
     }
 }
-
